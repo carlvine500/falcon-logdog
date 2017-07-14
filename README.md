@@ -1,3 +1,16 @@
+#update list
+1.tail from end after restart;
+2.add reg example;
+
+TODO:
+godep - manage dependency
+
+package:
+go get github.com/sdvdxl/falcon-logdog
+go get github.com/streamrail/concurrent-map
+go get github.com/fsnotify/fsnotify
+go get github.com/hpcloud/tail
+
 # falcon-logdog
 open-falcon日志关键词监控
 
