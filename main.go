@@ -121,7 +121,7 @@ func readFileAndSetTail(file *config.WatchFile) {
 	}
 
 	log.Info("read file", file.ResultFile.FileName)
-	tail, err := tail.TailFile(file.ResultFile.FileName, tail.Config{Follow: true})
+	tail, err := tail.TailFile(file.ResultFile.FileName, tail.Config{Follow: true,Location: &tail.SeekInfo{Offset: 0, Whence: os.SEEK_END}})
 	if err != nil {
 		log.Fatal(err)
 	}

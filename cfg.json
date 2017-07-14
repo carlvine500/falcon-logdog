@@ -2,30 +2,20 @@
   "logLevel": "DEBUG",
   "metric": "log",
   "timer": 60,
-  "agent": "http://10.10.128.53:1988/v1/push",
-  "host": "10-10-128-53",
+  "agent": "http://10.74.241.96:1988/v1/push",
+  "host": "ip-10-10-128-53",
   "files": [
     {
-      "path": "/data/logs/test",
-      "prefix": "aaa",
+      "path": "/Users/tingfeng/work/golang/src/github.com/sdvdxl/falcon-logdog",
+      "prefix": "logdog",
       "suffix": ".log",
       "keywords": [
         {
-          "exp": "ERROR",
-          "tag": "ERROR"
-        }
-      ]
-    },
-    {
-      "path": "/data/logs/test",
-      "prefix": "bbb",
-      "suffix": ".log",
-      "keywords": [
-        {
-          "exp": "key1",
-          "tag": "tag111"
+          "exp": "ERROR.*ALARM",
+          "tag": "key"
         }
       ]
     }
+        
   ]
 }
