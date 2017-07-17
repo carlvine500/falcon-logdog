@@ -61,6 +61,10 @@ type PushData struct {
 	Tags string `json:"tags"` //一组逗号分割的键值对, 对metric进一步描述和细化, 可以是空字符串. 比如idc=lg，比如service=xbox等，多个tag之间用逗号分割
 }
 
+func (f PushData) SetTimestamp(ts int64) {
+	f.Timestamp = ts
+}
+
 const configFile = "cfg.json"
 
 var (

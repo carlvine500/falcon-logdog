@@ -3,7 +3,7 @@
   "metric": "log",
   "timer": 60,
   "agent": "http://10.74.241.96:1988/v1/push",
-  "host": "ip-10-10-128-53",
+  "host": null,
   "files": [
     {
       "path": "/Users/tingfeng/work/golang/src/github.com/sdvdxl/falcon-logdog",

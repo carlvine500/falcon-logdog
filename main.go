@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"io"
 )
 
 var (
@@ -121,7 +122,7 @@ func readFileAndSetTail(file *config.WatchFile) {
 	}
 
 	log.Info("read file", file.ResultFile.FileName)
-	tail, err := tail.TailFile(file.ResultFile.FileName, tail.Config{Follow: true,Location: &tail.SeekInfo{Offset: 0, Whence: os.SEEK_END}})
+	tail, err := tail.TailFile(file.ResultFile.FileName, tail.Config{Follow: true,Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -179,27 +180,32 @@ func handleKeywords(file config.WatchFile, line string) {
 	for _, p := range file.Keywords {
 		value := 0.0
 		if p.Regex.MatchString(line) {
-			log.Debugf("exp:%v match ===> line: %v ", p.Regex.String(), line)
+			log.Infof("exp:%v match ===> line: %v ", p.Regex.String(), line)
 			value = 1.0
 		}
 
 		var data config.PushData
-		if v, ok := keywords.Get(p.Exp); ok {
+
+
+		if v, ok := keywords.Get(p.Tag + "=" + p.Exp); ok {
 			d := v.(config.PushData)
 			d.Value += value
 			data = d
 		} else {
 			data = config.PushData{Metric: config.Cfg.Metric,
 				Endpoint:    config.Cfg.Host,
-				Timestamp:   time.Now().Unix(),
+				Timestamp: time.Now().Unix(),
 				Value:       value,
 				Step:        config.Cfg.Timer,
 				CounterType: "GAUGE",
-				Tags:        "prefix=" + file.Prefix + ",suffix=" + file.Suffix + "," + p.Tag + "=" + p.FixedExp,
+				Tags:        /*"prefix=" + file.Prefix + ",suffix=" + file.Suffix + "," +*/ p.Tag + "=" + p.FixedExp,
 			}
 		}
 
-		keywords.Set(p.Exp, data)
+		keywords.Set(p.Tag + "=" + p.Exp, data)
+
+		//rlt,_:=json.Marshal(keywords)
+		//log.Debug("==x>"+string(rlt))
 
 	}
 }
@@ -210,19 +216,29 @@ func postData() {
 
 	go func() {
 		if len(keywords.Items()) != 0 {
+
 			data := make([]config.PushData, 0, 20)
+			//rlt,_:=json.Marshal(data)
+			//log.Debug("==1>"+string(rlt))
 			for k, v := range keywords.Items() {
-				data = append(data, v.(config.PushData))
+				// data timestamp bug desc:
+				// server record data at 00:30:00,00:31:00
+				// client sent two data: {00:30:29=1} send at 00:30:30, {00:30:31=0} at 00:31:30
+				// server merge two data as {00:30:00=0},{00:30:29=1} was lost
+				pushData := v.(config.PushData)
+				pushData.SetTimestamp(time.Now().Unix())
+				data = append(data, pushData)
 				keywords.Remove(k)
 			}
 
 			bytes, err := json.Marshal(data)
+			//log.Debug("==2>"+string(bytes))
 			if err != nil {
 				log.Error("marshal push data", data, err)
 				return
 			}
 
-			log.Debug("pushing data:", string(bytes))
+			log.Info("pushing data:", string(bytes))
 
 			resp, err := http.Post(c.Agent, "plain/text", strings.NewReader(string(bytes)))
 			if err != nil {
@@ -244,12 +260,14 @@ func fillData() {
 	for _, v := range c.WatchFiles {
 		for _, p := range v.Keywords {
 
-			key := v.ResultFile.FileName + p.Tag
-			//log.Println("_______", key)
-
+			key := p.Tag + "=" + p.Exp
+			//log.Debug("_______", key)
+			//rlt,_:=json.Marshal(keywords)
+			//log.Debug("==3>"+string(rlt))
 			if _, ok := keywords.Get(key); ok {
 				continue
 			}
+			//log.Debug("==3.1>"+string(rlt))
 
 			//不存在要插入一个补全
 			data := config.PushData{Metric: c.Metric,
@@ -258,10 +276,10 @@ func fillData() {
 				Value:       0.0,
 				Step:        c.Timer,
 				CounterType: "GAUGE",
-				Tags:        "prefix=" + v.Prefix + ",suffix=" + v.Suffix + "," + p.Tag + "=" + p.FixedExp,
+				Tags:        /*"prefix=" + v.Prefix + ",suffix=" + v.Suffix + "," +*/ p.Tag + "=" + p.FixedExp,
 			}
 
-			keywords.Set(key, data)
+			keywords.Set(p.Tag + "=" + p.Exp, data)
 		}
 	}
 
