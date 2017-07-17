@@ -2,7 +2,7 @@
 
 - 1.tail from end after restart;
 - 2.falcon data timestamp bugfix
-- 3.falcon tag change to {tag}={exp} eg: Counter=log/key=ERROR.ALARM;
+- 3.falcon tag change to {tag}={exp} eg: tag=CheckFalconIsAlive,exp=falcon.*alive ==> Counter=log/CheckFalconIsAlive=falcon.alive;
 
 ```
 // data timestamp bug desc:
