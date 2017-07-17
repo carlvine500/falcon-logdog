@@ -1,14 +1,14 @@
-#update list
+# update list
 
 - 1.tail from end after restart;
 - 2.falcon data timestamp bugfix
 - 3.falcon tag change to {tag}={exp} eg: Counter=log/key=ERROR.ALARM;
 
 ```
-				// data timestamp bug desc:
-				// server record data at 00:30:00,00:31:00
-				// client sent two data: {00:30:29=1} send at 00:30:30, {00:30:31=0} at 00:31:30
-				// server merge two data as {00:30:00=0},{00:30:29=1} was lost
+// data timestamp bug desc:
+// server record data at 00:30:00,00:31:00
+// client sent two data: {00:30:29=1} send at 00:30:30, {00:30:31=0} at 00:31:30
+// server merge two data as {00:30:00=0},{00:30:29=1} was lost
 ```
 
 package prepare:
