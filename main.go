@@ -213,6 +213,7 @@ func handleKeywords(file config.WatchFile, line string) {
 func postData() {
 	c := config.Cfg
 	workers <- true
+	currentTimestamp:=time.Now().Unix()
 
 	go func() {
 		if len(keywords.Items()) != 0 {
@@ -226,7 +227,7 @@ func postData() {
 				// client sent two data: {00:30:29=1} send at 00:30:30, {00:30:31=0} at 00:31:30
 				// server merge two data as {00:30:00=0},{00:30:29=1} was lost
 				pushData := v.(config.PushData)
-				pushData.SetTimestamp(time.Now().Unix())
+				pushData.Timestamp = currentTimestamp
 				data = append(data, pushData)
 				keywords.Remove(k)
 			}
